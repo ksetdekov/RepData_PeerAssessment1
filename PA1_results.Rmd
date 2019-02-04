@@ -1,0 +1,58 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+Load data into correct format
+
+* Check if activity.csv already exists, unpack if necessary
+
+* using read_csv import data with correct data types
+
+* look at the head of the data and summary to figure out basics
+
+```{r}
+if (!file.exists("./activity.csv"))
+{
+        unzip("./activity.zip")
+}
+library(readr)
+activity <- read_csv("activity.csv", col_types = cols(date = col_date(format = "%Y-%m-%d"), 
+    steps = col_number()))
+head(activity)
+summary(activity)
+
+```
+Provide a guick look at steps destibution:
+
+* by interval
+
+* day
+
+* both
+
+```{r}
+library(ggplot2)
+qplot(activity$interval,activity$steps)
+qplot(activity$date,activity$steps)
+x <- ggplot(data = activity, mapping = aes(x=date, y=interval, col=steps))
+x+geom_point()
+```
+
+## What is mean total number of steps taken per day?
+
+
+
+## What is the average daily activity pattern?
+
+
+
+## Imputing missing values
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
