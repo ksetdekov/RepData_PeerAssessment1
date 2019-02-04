@@ -37,14 +37,28 @@ Provide a guick look at steps destibution:
 
 ```{r}
 library(ggplot2)
-qplot(activity$interval,activity$steps)
-qplot(activity$date,activity$steps)
+qplot(activity$interval,activity$steps)+theme_bw()
+qplot(activity$date,activity$steps)+theme_bw()
 x <- ggplot(data = activity, mapping = aes(x=date, y=interval, col=steps))
-x+geom_point()
+x+geom_point()+theme_bw()
 ```
 
 ## What is mean total number of steps taken per day?
 
+For this part of the assignment, you can ignore the missing values in the dataset.
+
+1. Make a histogram of the total number of steps taken each day
+
+2. Calculate and report the mean and median total number of steps taken per day
+```{r}
+library(dplyr)
+activity %>% group_by(date) %>% mutate(sumstep=cumsum(steps))-> test
+daysteps<- aggregate(steps ~ date, activity, sum)
+ggplot(daysteps, aes(x=steps))+ geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
+
+mean(daysteps$steps, na.rm = TRUE)
+median(daysteps$steps, na.rm = TRUE)
+```
 
 
 ## What is the average daily activity pattern?
