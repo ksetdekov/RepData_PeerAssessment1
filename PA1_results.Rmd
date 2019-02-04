@@ -45,6 +45,15 @@ x+geom_point()
 
 ## What is mean total number of steps taken per day?
 
+```{r}
+activityclear <- na.omit(activity)
+activityclear$datenum <- as.numeric(activityclear$date)
+activityclear <- activityclear[,-2]
+ library(party)
+ cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
+ activityclear$pred <- predict(cfit1,activityclear)
+qplot(activityclear$interval,activityclear$pred, geom = "line") 
+```
 
 
 ## What is the average daily activity pattern?

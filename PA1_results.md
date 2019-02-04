@@ -93,6 +93,60 @@ x+geom_point()
 ## What is mean total number of steps taken per day?
 
 
+```r
+activityclear <- na.omit(activity)
+activityclear$datenum <- as.numeric(activityclear$date)
+activityclear <- activityclear[,-2]
+ library(party)
+```
+
+```
+## Loading required package: grid
+```
+
+```
+## Loading required package: mvtnorm
+```
+
+```
+## Loading required package: modeltools
+```
+
+```
+## Loading required package: stats4
+```
+
+```
+## Loading required package: strucchange
+```
+
+```
+## Loading required package: zoo
+```
+
+```
+## 
+## Attaching package: 'zoo'
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+```
+
+```
+## Loading required package: sandwich
+```
+
+```r
+ cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
+ activityclear$pred <- predict(cfit1,activityclear)
+qplot(activityclear$interval,activityclear$pred, geom = "line") 
+```
+
+![](PA1_results_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 
 ## What is the average daily activity pattern?
 
