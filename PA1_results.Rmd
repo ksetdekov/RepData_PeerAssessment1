@@ -4,6 +4,14 @@ output:
   html_document:
     keep_md: true
 ---
+## load libraries
+```{r load libraries, message=FALSE, warning=FALSE}
+library(readr)
+library(ggplot2)
+library(party)
+library(reshape2)
+library(dplyr)
+```
 
 
 ## Loading and preprocessing the data
@@ -20,7 +28,6 @@ if (!file.exists("./activity.csv"))
 {
         unzip("./activity.zip")
 }
-library(readr)
 activity <- read_csv("activity.csv", col_types = cols(date = col_date(format = "%Y-%m-%d"), 
     steps = col_number()))
 head(activity)
@@ -36,7 +43,6 @@ Provide a guick look at steps destibution:
 * both
 
 ```{r}
-library(ggplot2)
 qplot(activity$interval,activity$steps)+theme_bw()
 qplot(activity$date,activity$steps)+theme_bw()
 x <- ggplot(data = activity, mapping = aes(x=date, y=interval, col=steps))
@@ -52,12 +58,14 @@ For this part of the assignment, you can ignore the missing values in the datase
 2. Calculate and report the mean and median total number of steps taken per day
 ```{r}
 daysteps<- aggregate(steps ~ date, activity, sum)
-ggplot(daysteps, aes(x=steps))+ 
-        geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+
-        geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+
-        geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+
-        scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
-
+plotsteps <- function(daysteps) {
+  ggplot(daysteps, aes(x=steps))+ 
+          geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+
+          geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+
+          geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+
+          scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
+}
+plotsteps(daysteps)
 mean(daysteps$steps, na.rm = TRUE)
 median(daysteps$steps, na.rm = TRUE)
 ```
@@ -87,9 +95,6 @@ activityclear <- na.omit(activity)
 activityclear$datenum <- as.numeric(activityclear$date)
 activityclear <- activityclear[,-2]
 
-library(party)
-library(reshape2)
-
 cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
 activityclear$pred <- predict(cfit1,activityclear)
 
@@ -107,19 +112,43 @@ calculations or summaries of the data.
 
 1. Calculate and report the total number of missing values in the dataset
 (i.e. the total number of rows with NAs)
+```{r}
+ok <- complete.cases(activity)
+sum(!ok) #number of rows with NAs
+```
 
-2. Devise a strategy for filling in all of the missing values in the dataset. The
-strategy does not need to be sophisticated. For example, you could use
-the mean/median for that day, or the mean for that 5-minute interval, etc.
+2. Devise a strategy for filling in all of the missing values in the dataset.
+For a presious part of the task i estimated step numbers based on intervals using
+Conditional Inference Trees. I will be using the result of this prediction here (cfit1).
+Predictions for an interval based on its number are potte below.
+For a missing value in a given interval values from the plot below will be used
+```{r}
+ggplot(intervalsteps, aes(x = interval, y = pred)) + theme_bw()+geom_line()+
+        labs(title = "Steps predicted by conditional inference tree base on interval")
+
+```
 
 3. Create a new dataset that is equal to the original dataset but with the
 missing data filled in.
+
+```{r}
+activityfixed <- activity %>%   mutate(pred = predict(cfit1, .)) %>% mutate(steps = ifelse(is.na(steps), pred, steps))
+```
 
 4. Make a histogram of the total number of steps taken each day and Calculate
 and report the mean and median total number of steps taken per day. Do
 these values differ from the estimates from the first part of the assignment?
 What is the impact of imputing missing data on the estimates of the total
 daily number of steps?
+
+```{r}
+daystepsfix<- aggregate(steps ~ date, activityfixed, sum)
+
+plotsteps(daystepsfix)
+mean(daystepsfix$steps, na.rm = TRUE)
+median(daystepsfix$steps, na.rm = TRUE)
+```
+Mean is the same, median is within 2 steps per day from the unprocessed activity data.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -129,6 +158,20 @@ with the filled-in missing values for this part.
 1. Create a new factor variable in the dataset with two levels – “weekday”
 and “weekend” indicating whether a given date is a weekday or weekend
 day.
+
+```{r}
+summary(as.POSIXlt(activityfixed$date)$wday)
+activityfixed <-
+        activityfixed %>%   mutate(weekday = ifelse(
+        as.POSIXlt(activityfixed$date)$wday == 0 |
+        as.POSIXlt(activityfixed$date)$wday == 6,
+        "weekend",
+        "weekday"
+        ))
+activityfixed <- activityfixed %>% mutate(weekday = factor(weekday))
+intervalsteps_fix<- aggregate(steps ~ date+weekday, activityfixed, mean)
+
+```
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the
 5-minute interval (x-axis) and the average number of steps taken, averaged

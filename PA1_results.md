@@ -4,6 +4,15 @@ output:
   html_document:
     keep_md: true
 ---
+## load libraries
+
+```r
+library(readr)
+library(ggplot2)
+library(party)
+library(reshape2)
+library(dplyr)
+```
 
 
 ## Loading and preprocessing the data
@@ -21,7 +30,6 @@ if (!file.exists("./activity.csv"))
 {
         unzip("./activity.zip")
 }
-library(readr)
 activity <- read_csv("activity.csv", col_types = cols(date = col_date(format = "%Y-%m-%d"), 
     steps = col_number()))
 head(activity)
@@ -63,7 +71,6 @@ Provide a guick look at steps destibution:
 
 
 ```r
-library(ggplot2)
 qplot(activity$interval,activity$steps)+theme_bw()
 ```
 
@@ -100,11 +107,14 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 ```r
 daysteps<- aggregate(steps ~ date, activity, sum)
-ggplot(daysteps, aes(x=steps))+ 
-        geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+
-        geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+
-        geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+
-        scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
+plotsteps <- function(daysteps) {
+  ggplot(daysteps, aes(x=steps))+ 
+          geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+
+          geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+
+          geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+
+          scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
+}
+plotsteps(daysteps)
 ```
 
 ```
@@ -163,51 +173,6 @@ activityclear <- na.omit(activity)
 activityclear$datenum <- as.numeric(activityclear$date)
 activityclear <- activityclear[,-2]
 
-library(party)
-```
-
-```
-## Loading required package: grid
-```
-
-```
-## Loading required package: mvtnorm
-```
-
-```
-## Loading required package: modeltools
-```
-
-```
-## Loading required package: stats4
-```
-
-```
-## Loading required package: strucchange
-```
-
-```
-## Loading required package: zoo
-```
-
-```
-## 
-## Attaching package: 'zoo'
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     as.Date, as.Date.numeric
-```
-
-```
-## Loading required package: sandwich
-```
-
-```r
-library(reshape2)
-
 cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
 activityclear$pred <- predict(cfit1,activityclear)
 
@@ -235,18 +200,71 @@ calculations or summaries of the data.
 1. Calculate and report the total number of missing values in the dataset
 (i.e. the total number of rows with NAs)
 
-2. Devise a strategy for filling in all of the missing values in the dataset. The
-strategy does not need to be sophisticated. For example, you could use
-the mean/median for that day, or the mean for that 5-minute interval, etc.
+```r
+ok <- complete.cases(activity)
+sum(!ok) #number of rows with NAs
+```
+
+```
+## [1] 2304
+```
+
+2. Devise a strategy for filling in all of the missing values in the dataset.
+For a presious part of the task i estimated step numbers based on intervals using
+Conditional Inference Trees. I will be using the result of this prediction here (cfit1).
+Predictions for an interval based on its number are potte below.
+For a missing value in a given interval values from the plot below will be used
+
+```r
+ggplot(intervalsteps, aes(x = interval, y = pred)) + theme_bw()+geom_line()+
+        labs(title = "Steps predicted by conditional inference tree base on interval")
+```
+
+![](PA1_results_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
 3. Create a new dataset that is equal to the original dataset but with the
 missing data filled in.
+
+
+```r
+activityfixed <- activity %>%   mutate(pred = predict(cfit1, .)) %>% mutate(steps = ifelse(is.na(steps), pred, steps))
+```
 
 4. Make a histogram of the total number of steps taken each day and Calculate
 and report the mean and median total number of steps taken per day. Do
 these values differ from the estimates from the first part of the assignment?
 What is the impact of imputing missing data on the estimates of the total
 daily number of steps?
+
+
+```r
+daystepsfix<- aggregate(steps ~ date, activityfixed, sum)
+
+plotsteps(daystepsfix)
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](PA1_results_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+
+```r
+mean(daystepsfix$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(daystepsfix$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
