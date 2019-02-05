@@ -51,8 +51,6 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 2. Calculate and report the mean and median total number of steps taken per day
 ```{r}
-library(dplyr)
-activity %>% group_by(date) %>% mutate(sumstep=cumsum(steps))-> test
 daysteps<- aggregate(steps ~ date, activity, sum)
 ggplot(daysteps, aes(x=steps))+ 
         geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+
@@ -69,18 +67,37 @@ median(daysteps$steps, na.rm = TRUE)
 
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis)
 and the average number of steps taken, averaged across all days (y-axis)
+```{r}
+intervalsteps<- aggregate(steps ~ interval, activity, mean)
+ggplot(data=intervalsteps, aes(x=interval, y=steps))+theme_bw()+geom_line()+
+        labs(title = "Average steps by interval")
+```
 
 2. Which 5-minute interval, on average across all the days in the dataset,
 contains the maximum number of steps?
 
 ```{r}
+intervalsteps[which.max(intervalsteps$steps),1]
+```
+
+
+Bonus - comparison on average steps for interval with predicted average steps based on desision tree model.
+```{r}
 activityclear <- na.omit(activity)
 activityclear$datenum <- as.numeric(activityclear$date)
 activityclear <- activityclear[,-2]
- library(party)
- cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
- activityclear$pred <- predict(cfit1,activityclear)
-qplot(activityclear$interval,activityclear$pred, geom = "line") 
+
+library(party)
+library(reshape2)
+
+cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
+activityclear$pred <- predict(cfit1,activityclear)
+
+intervalsteps$pred <- predict(cfit1,intervalsteps)
+interval_long <- melt(intervalsteps, id = "interval")  # convert to long format
+ggplot(interval_long, aes(x = interval, y = value, colour = variable)) + 
+        theme_bw()+geom_line()+labs(title = "Average steps per interval, actual and predicted by model")
+
 ```
 
 ## Imputing missing values

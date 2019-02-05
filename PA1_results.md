@@ -99,28 +99,6 @@ For this part of the assignment, you can ignore the missing values in the datase
 2. Calculate and report the mean and median total number of steps taken per day
 
 ```r
-library(dplyr)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
-activity %>% group_by(date) %>% mutate(sumstep=cumsum(steps))-> test
 daysteps<- aggregate(steps ~ date, activity, sum)
 ggplot(daysteps, aes(x=steps))+ 
         geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+
@@ -157,15 +135,35 @@ median(daysteps$steps, na.rm = TRUE)
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis)
 and the average number of steps taken, averaged across all days (y-axis)
 
+```r
+intervalsteps<- aggregate(steps ~ interval, activity, mean)
+ggplot(data=intervalsteps, aes(x=interval, y=steps))+theme_bw()+geom_line()+
+        labs(title = "Average steps by interval")
+```
+
+![](PA1_results_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 2. Which 5-minute interval, on average across all the days in the dataset,
 contains the maximum number of steps?
 
 
 ```r
+intervalsteps[which.max(intervalsteps$steps),1]
+```
+
+```
+## [1] 835
+```
+
+
+Bonus - comparison on average steps for interval with predicted average steps based on desision tree model.
+
+```r
 activityclear <- na.omit(activity)
 activityclear$datenum <- as.numeric(activityclear$date)
 activityclear <- activityclear[,-2]
- library(party)
+
+library(party)
 ```
 
 ```
@@ -208,12 +206,26 @@ activityclear <- activityclear[,-2]
 ```
 
 ```r
- cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
- activityclear$pred <- predict(cfit1,activityclear)
-qplot(activityclear$interval,activityclear$pred, geom = "line") 
+library(reshape2)
+
+cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
+activityclear$pred <- predict(cfit1,activityclear)
+
+intervalsteps$pred <- predict(cfit1,intervalsteps)
+interval_long <- melt(intervalsteps, id = "interval")  # convert to long format
 ```
 
-![](PA1_results_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+```
+## Warning: attributes are not identical across measure variables; they will
+## be dropped
+```
+
+```r
+ggplot(interval_long, aes(x = interval, y = value, colour = variable)) + 
+        theme_bw()+geom_line()+labs(title = "Average steps per interval, actual and predicted by model")
+```
+
+![](PA1_results_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
 ## Imputing missing values
 Note that there are a number of days/intervals where there are missing values
