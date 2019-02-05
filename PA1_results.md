@@ -122,7 +122,11 @@ library(dplyr)
 ```r
 activity %>% group_by(date) %>% mutate(sumstep=cumsum(steps))-> test
 daysteps<- aggregate(steps ~ date, activity, sum)
-ggplot(daysteps, aes(x=steps))+ geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
+ggplot(daysteps, aes(x=steps))+ 
+        geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+
+        geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+
+        geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+
+        scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
 ```
 
 ```
@@ -149,6 +153,12 @@ median(daysteps$steps, na.rm = TRUE)
 
 
 ## What is the average daily activity pattern?
+
+1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis)
+and the average number of steps taken, averaged across all days (y-axis)
+
+2. Which 5-minute interval, on average across all the days in the dataset,
+contains the maximum number of steps?
 
 
 ```r
@@ -206,7 +216,36 @@ qplot(activityclear$interval,activityclear$pred, geom = "line")
 ![](PA1_results_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 ## Imputing missing values
+Note that there are a number of days/intervals where there are missing values
+(coded as NA). The presence of missing days may introduce bias into some
+calculations or summaries of the data.
 
+1. Calculate and report the total number of missing values in the dataset
+(i.e. the total number of rows with NAs)
+
+2. Devise a strategy for filling in all of the missing values in the dataset. The
+strategy does not need to be sophisticated. For example, you could use
+the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+3. Create a new dataset that is equal to the original dataset but with the
+missing data filled in.
+
+4. Make a histogram of the total number of steps taken each day and Calculate
+and report the mean and median total number of steps taken per day. Do
+these values differ from the estimates from the first part of the assignment?
+What is the impact of imputing missing data on the estimates of the total
+daily number of steps?
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+For this part the weekdays() function may be of some help here. Use the dataset
+with the filled-in missing values for this part.
+
+1. Create a new factor variable in the dataset with two levels – “weekday”
+and “weekend” indicating whether a given date is a weekday or weekend
+day.
+
+2. Make a panel plot containing a time series plot (i.e. type = "l") of the
+5-minute interval (x-axis) and the average number of steps taken, averaged
+across all weekday days or weekend days (y-axis). The plot should look
+something like the following, which was creating using simulated data:
