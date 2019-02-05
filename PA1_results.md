@@ -64,7 +64,7 @@ Provide a guick look at steps destibution:
 
 ```r
 library(ggplot2)
-qplot(activity$interval,activity$steps)
+qplot(activity$interval,activity$steps)+theme_bw()
 ```
 
 ```
@@ -74,7 +74,7 @@ qplot(activity$interval,activity$steps)
 ![](PA1_results_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 ```r
-qplot(activity$date,activity$steps)
+qplot(activity$date,activity$steps)+theme_bw()
 ```
 
 ```
@@ -85,13 +85,67 @@ qplot(activity$date,activity$steps)
 
 ```r
 x <- ggplot(data = activity, mapping = aes(x=date, y=interval, col=steps))
-x+geom_point()
+x+geom_point()+theme_bw()
 ```
 
 ![](PA1_results_files/figure-html/unnamed-chunk-2-3.png)<!-- -->
 
 ## What is mean total number of steps taken per day?
 
+For this part of the assignment, you can ignore the missing values in the dataset.
+
+1. Make a histogram of the total number of steps taken each day
+
+2. Calculate and report the mean and median total number of steps taken per day
+
+```r
+library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+activity %>% group_by(date) %>% mutate(sumstep=cumsum(steps))-> test
+daysteps<- aggregate(steps ~ date, activity, sum)
+ggplot(daysteps, aes(x=steps))+ geom_histogram()+labs(x="Number of steps per day", y="Count", title = "Total daily steps distribution")+geom_vline(aes(xintercept=mean(daysteps$steps, na.rm = TRUE), color="mean"), show.legend=TRUE, size=2)+geom_vline(aes(xintercept=median(daysteps$steps, na.rm = TRUE), color="median"), show.legend=TRUE)+scale_color_brewer(name="statistics", palette = "Dark2")+theme_bw()
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+![](PA1_results_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
+mean(daysteps$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(daysteps$steps, na.rm = TRUE)
+```
+
+```
+## [1] 10765
+```
 
 ```r
 activityclear <- na.omit(activity)
