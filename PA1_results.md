@@ -147,6 +147,10 @@ median(daysteps$steps, na.rm = TRUE)
 ## [1] 10765
 ```
 
+
+## What is the average daily activity pattern?
+
+
 ```r
 activityclear <- na.omit(activity)
 activityclear$datenum <- as.numeric(activityclear$date)
@@ -199,12 +203,7 @@ activityclear <- activityclear[,-2]
 qplot(activityclear$interval,activityclear$pred, geom = "line") 
 ```
 
-![](PA1_results_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
-
-
-## What is the average daily activity pattern?
-
-
+![](PA1_results_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 ## Imputing missing values
 

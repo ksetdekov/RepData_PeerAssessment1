@@ -45,16 +45,6 @@ x+geom_point()+theme_bw()
 
 ## What is mean total number of steps taken per day?
 
-<<<<<<< HEAD
-```{r}
-activityclear <- na.omit(activity)
-activityclear$datenum <- as.numeric(activityclear$date)
-activityclear <- activityclear[,-2]
- library(party)
- cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
- activityclear$pred <- predict(cfit1,activityclear)
-qplot(activityclear$interval,activityclear$pred, geom = "line") 
-=======
 For this part of the assignment, you can ignore the missing values in the dataset.
 
 1. Make a histogram of the total number of steps taken each day
@@ -68,13 +58,20 @@ ggplot(daysteps, aes(x=steps))+ geom_histogram()+labs(x="Number of steps per day
 
 mean(daysteps$steps, na.rm = TRUE)
 median(daysteps$steps, na.rm = TRUE)
->>>>>>> cf1f7f4ab4208309f53758a40a4ad4128ba2ebbd
 ```
 
 
 ## What is the average daily activity pattern?
 
-
+```{r}
+activityclear <- na.omit(activity)
+activityclear$datenum <- as.numeric(activityclear$date)
+activityclear <- activityclear[,-2]
+ library(party)
+ cfit1 <- ctree(steps ~ ., data = activityclear[,-3])
+ activityclear$pred <- predict(cfit1,activityclear)
+qplot(activityclear$interval,activityclear$pred, geom = "line") 
+```
 
 ## Imputing missing values
 
