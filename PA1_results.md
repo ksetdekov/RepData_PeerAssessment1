@@ -264,7 +264,7 @@ median(daystepsfix$steps, na.rm = TRUE)
 ```
 ## [1] 10766.19
 ```
-
+Mean is the same, median is within 2 steps per day from the unprocessed activity data.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -275,7 +275,51 @@ with the filled-in missing values for this part.
 and “weekend” indicating whether a given date is a weekday or weekend
 day.
 
+
+```r
+summary(as.POSIXlt(activityfixed$date)$wday)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##       0       1       3       3       5       6
+```
+
+```r
+activityfixed <-
+        activityfixed %>%   mutate(weekday = ifelse(
+        as.POSIXlt(activityfixed$date)$wday == 0 |
+        as.POSIXlt(activityfixed$date)$wday == 6,
+        "weekend",
+        "weekday"
+        ))
+activityfixed <- activityfixed %>% mutate(weekday = factor(weekday))
+intervalsteps_fix<- aggregate(steps ~ interval+weekday, activityfixed, mean)
+table(as.POSIXlt(activityfixed$date)$wday,activityfixed$weekday)
+```
+
+```
+##    
+##     weekday weekend
+##   0       0    2304
+##   1    2592       0
+##   2    2592       0
+##   3    2592       0
+##   4    2592       0
+##   5    2592       0
+##   6       0    2304
+```
+
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the
 5-minute interval (x-axis) and the average number of steps taken, averaged
-across all weekday days or weekend days (y-axis). The plot should look
-something like the following, which was creating using simulated data:
+across all weekday days or weekend days (y-axis)
+
+```r
+intervalsteps_fix_long <- melt(intervalsteps_fix, id = c("interval","weekday"))  # convert to long format
+ggplot(intervalsteps_fix_long, aes(x = interval, y = value, group=weekday)) + 
+        theme_bw()+facet_grid(weekday ~ .)+geom_line()+
+        labs(title = "Average steps per interval, separate for weekdays and weekends")
+```
+
+![](PA1_results_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+

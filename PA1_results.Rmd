@@ -169,11 +169,17 @@ activityfixed <-
         "weekday"
         ))
 activityfixed <- activityfixed %>% mutate(weekday = factor(weekday))
-intervalsteps_fix<- aggregate(steps ~ date+weekday, activityfixed, mean)
-
+intervalsteps_fix<- aggregate(steps ~ interval+weekday, activityfixed, mean)
+table(as.POSIXlt(activityfixed$date)$wday,activityfixed$weekday)
 ```
 
 2. Make a panel plot containing a time series plot (i.e. type = "l") of the
 5-minute interval (x-axis) and the average number of steps taken, averaged
-across all weekday days or weekend days (y-axis). The plot should look
-something like the following, which was creating using simulated data:
+across all weekday days or weekend days (y-axis)
+```{r}
+intervalsteps_fix_long <- melt(intervalsteps_fix, id = c("interval","weekday"))  # convert to long format
+ggplot(intervalsteps_fix_long, aes(x = interval, y = value, group=weekday)) + 
+        theme_bw()+facet_grid(weekday ~ .)+geom_line()+
+        labs(title = "Average steps per interval, separate for weekdays and weekends")
+```
+
