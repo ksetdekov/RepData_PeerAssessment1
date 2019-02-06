@@ -145,10 +145,10 @@ daily number of steps?
 daystepsfix<- aggregate(steps ~ date, activityfixed, sum)
 
 plotsteps(daystepsfix)
-mean(daystepsfix$steps, na.rm = TRUE)
-median(daystepsfix$steps, na.rm = TRUE)
+meanstepsfix<- mean(daystepsfix$steps, na.rm = TRUE)
+mediandaystepsfix<- median(daystepsfix$steps, na.rm = TRUE)
 ```
-Mean is the same, median is within 2 steps per day from the unprocessed activity data.
+Mean (`r format(round(meanstepsfix, 2), nsmall = 2)`) is the same, median (`r format(round(mediandaystepsfix, 2), nsmall = 2)`)is within 2 steps per day from the unprocessed activity data.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?

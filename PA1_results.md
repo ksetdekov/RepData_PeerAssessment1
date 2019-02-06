@@ -250,21 +250,10 @@ plotsteps(daystepsfix)
 ![](PA1_results_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 ```r
-mean(daystepsfix$steps, na.rm = TRUE)
+meanstepsfix<- mean(daystepsfix$steps, na.rm = TRUE)
+mediandaystepsfix<- median(daystepsfix$steps, na.rm = TRUE)
 ```
-
-```
-## [1] 10766.19
-```
-
-```r
-median(daystepsfix$steps, na.rm = TRUE)
-```
-
-```
-## [1] 10766.19
-```
-Mean is the same, median is within 2 steps per day from the unprocessed activity data.
+Mean (10766.19) is the same, median (10766.19)is within 2 steps per day from the unprocessed activity data.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
